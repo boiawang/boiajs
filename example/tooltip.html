@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="../../css/style.css">
+    <script type="text/javascript" src="../boia.js"></script>
+
+    <style>
+        body {padding: 100px;}
+        #myTooltip {width: 300px;height: 200px;background: #ccc;text-align: center;line-height: 200px;}
+    </style>
+</head>
+
+<body>
+    <div id="myTooltip">
+        <input class="input" type="text" />
+    </div>
+    <script type="text/javascript">
+        (function(B) {
+
+            var d = document;
+
+            new B.Tooltip({
+                trigger: '.input'
+            });
+
+        })(Boia);
+    </script>
+</body>
+
+</html>

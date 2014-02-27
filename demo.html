@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="../css/style.css">
+    <script type="text/javascript" src="boia.js"></script>
+</head>
+
+<body>
+    <div id="myTab" class="demo">
+        <ul class="nav nav-tabs">
+            <li><a href="#tab-1">普通查找</a>
+            </li>
+            <li class="active"><a href="#tab-2">高级查找</a>
+            </li>
+            <li class=""><a href="#tab-3">其他查找</a>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <div id="tab-1" class="tab-pane tab-hidden content-item">
+                111
+            </div>
+            <div id="tab-2" class="content-item">
+                222
+            </div>
+            <div id="tab-3" class="content-item tab-hidden">
+                333
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        (function(B) {
+
+            var d = document;
+
+            var tabview = new B.TabView({
+                boundingBox: '.demo'
+            });
+
+        })(Boia);
+    </script>
+</body>
+
+</html>

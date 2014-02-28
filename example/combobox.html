@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+    	<title>combobox</title>
+    	<style type="text/css">
+    		.input-container {position: relative;height: 30px;width: 180px;border: 1px solid #739AB9;}
+		.combobox-input {border: 0;height: 28px;width: 150px;}
+		.combobox-arrow-box {display: inline-block;height: 30px;width: 30px;position: absolute;right: 0;background: #F0F5F8;border-left: 1px solid #91AEC0;line-height: 25px;text-align: center;}
+		.combobox-arrow {display: inline-block;width: 0;height: 0;line-height:0; border-color: transparent;
+    			border-style: solid;}
+    		.combobox-arrow.top {border-width: 5px 5px 0;border-top-color: #146793;}
+    		.combobox-arrow.bottom {border-width: 0 5px 5px;border-bottom-color: #146793;}
+    		.combobox-drop {width: 180px;margin: 0;padding: 0;border: 1px solid #aaa;border-top: 0;}
+    		.combobox-drop .combobox-result {cursor: pointer;}
+    		.combobox-drop .combobox-result:hover {background: rgb(59,148,212)}
+    	</style>
+</head>
+<body>
+	<div class="combobox">
+		<div class="input-container">
+			<input type="text" class="combobox-input" />
+			<span class="combobox-arrow-box">
+				<span class="combobox-arrow top"></span>
+			</span>
+		</div>
+		<ul class="combobox-drop">
+			<li class="combobox-result">测试1</li>
+			<li class="combobox-result">测试2</li>
+			<li class="combobox-result">测试3</li>
+		</ul>
+	</div>
+</body>
+</html>

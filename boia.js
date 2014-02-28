@@ -7,6 +7,10 @@ var Boia = {};
 
     B.each = Array.prototype.forEach;
 
+    B.bind = function(fn,context, args){
+        return fn.bind(context,args);
+    };
+
     B.one = function(selector) {
 
         var node = null,
@@ -28,7 +32,8 @@ var Boia = {};
     };
 
     B.on = function(type, fn, selector) {
-        B.one(selector).addEventListener(type, fn);
+
+        B.one(selector) && B.one(selector).addEventListener(type, fn);
     };
 
 
@@ -61,6 +66,8 @@ var Boia = {};
     'use strict';
 
     var d = document;
+
+    HTMLElement = typeof(HTMLElement) != 'undefiend' ? HTMLElement : Element;
 
     HTMLElement.prototype.one = function(selector) {
 
@@ -127,13 +134,22 @@ var Boia = {};
         与已定位的父容器（offsetParent对象）左上角的距离
     5. offsetParent对象是指元素最近的定位（relative,absolute）祖先元素，
         递归上溯，如果没有祖先元素是定位的话，会返回null*/
-    HTMLElement.prototype.width = function() {
+    HTMLElement.prototype.eleWidth = function() {
 
         var width = 0;
 
         width = this.offsetWidth;
 
         return width;
+    };      
+
+    HTMLElement.prototype.eleHeight = function() {
+
+        var height = 0;
+
+        height = this.offsetHeight;
+
+        return height;
     };         
 
     /**
@@ -170,6 +186,120 @@ var Boia = {};
 
         return actualTop;
     };          
+
+    HTMLElement.prototype.getXY = function() {
+
+        var x,y;
+
+        x = this.getX();
+
+        y = this.getY();
+
+        return {x: x,y: y};
+    };  
+
+    /**
+     * [css description]
+     * @param  {[string]} styleName [description]
+     * @param  {[string]} val       [description]
+     * @return {[type]}           [description]
+     */
+    HTMLElement.prototype.css = function(styleName, val) {
+
+        if(val) {
+            this.style[styleName] = val;
+        }else {
+            return this.style[styleName];
+        }
+
+        return this;
+
+    };     
+
+    HTMLElement.prototype.text = function(content) {
+
+        if(content) {
+            this.innerText = content;
+        }else {
+            return this.innerText;
+        }
+
+        return this;
+        
+    };   
+
+    HTMLElement.prototype.html = function(content) {
+
+        if(content) {
+            this.innerHTML = content;
+        }else {
+            return this.innerHTML;
+        }
+
+        return this;
+        
+    };          
+
+    HTMLElement.prototype.append = function(content) {
+
+        this.innerHTML += content;
+
+        return this;
+        
+    };     
+
+     HTMLElement.prototype.prepend = function(content) {
+
+        var div = document.createElement('div').cloneNode(), nodes = null,
+            fragment = document.createDocumentFragment();
+
+        div.innerHTML = content;
+
+
+        nodes = div.childNodes;
+        for(var i = 0,length = nodes.length;i < length;i++){
+            fragment.appendChild(nodes[i].cloneNode(true));
+        }
+
+        this.appendChild(fragment);
+
+        nodes = null;
+        fragment = null;       
+
+        return this;
+        
+    };        
+
+    /*HTMLElement.prototype.appendHTML = function(html) {
+        var divTemp = document.createElement("div"), nodes = null
+            // 文档片段，一次性append，提高性能
+            , fragment = document.createDocumentFragment();
+        divTemp.innerHTML = html;
+        nodes = divTemp.childNodes;
+        for (var i=0, length=nodes.length; i<length; i+=1) {
+           fragment.appendChild(nodes[i].cloneNode(true));
+        }
+        this.appendChild(fragment);
+        // 据说下面这样子世界会更清净
+        nodes = null;
+        fragment = null;
+    };
+
+    HTMLElement.prototype.prependHTML = function( html) {
+        var divTemp = document.createElement("div"), nodes = null
+            , fragment = document.createDocumentFragment();
+
+        divTemp.innerHTML = html;
+        nodes = divTemp.childNodes;
+        for (var i=0, length=nodes.length; i<length; i+=1) {
+           fragment.appendChild(nodes[i].cloneNode(true));
+        }
+        // 插入到容器的前面 - 差异所在
+        this.insertBefore(fragment, this.firstChild);
+        // 内存回收？
+        nodes = null;
+        fragment = null;
+    };*/
 
 })(Boia);
 
@@ -345,40 +475,158 @@ var Boia = {};
 
     var DOT = '.',
         TOOLTIP = 'tooltip',
-        TOOLTIP_HIDDEN = 'tooltip-hidden';
+        TOOLTIP_HIDDEN = 'tooltip-hidden',
+        TOOLTIP_INNER = 'tooltip-inner';
 
     B.Tooltip = function(config){
 
         this.trigger = config.trigger || '';
-        this.position = config.position || '';
+        this.position = config.position || 'bottom';
+        this.tipText = config.tipText || '这是一个工具条';
+
+        this._id = 'tooltip_'+Math.round(Math.random()*100000);
+
+        this.template = '<div id="'+this._id+'" class="tooltip '+this.position+'"><div class="tooltip-inner">'+this.tipText+'</div><div class="tooltip-arrow"></div></div>';
         
         this.initializer();
     };
 
     B.Tooltip.prototype = {
         initializer: function(){
-            this.boundingBox = B.one(DOT + TOOLTIP);
 
+            this.initComponent();
             this.bindUI();
         },
-        render: function(){
 
+        initComponent: function(){
+            B.one('.componentBox').prepend(this.template);
+
+            this.boundingBox = B.one('#'+this._id);
+
+            this.triggerNode = B.one(this.trigger);
+            this.contentBox = this.boundingBox.one(DOT + TOOLTIP_INNER);
+
+            // this.contentBox.text(this.tipText);
+
+        },
+
+        render: function(){
+            this.renderUI();
+
+            this._setCoord();
+            return this;
+        },
+        renderUI: function(){
         },
         bindUI: function(){
 
-            B.on('click', this.hide);
+            B.on('click', B.bind(this.hide,this), 'body' );
+        },
+        _setCoord: function(){
+            var x = this.triggerNode.getX(),
+                y = this.triggerNode.getY(),
+                width = this.triggerNode.eleWidth(),
+                height = this.triggerNode.eleHeight();
 
+            this.boundingBox.css('left',x+'px');
+            this.boundingBox.css('top',y+height+'px');
         },
 
         hide: function(){
             var boundingBox = this.boundingBox;
-            
             boundingBox.addClass(TOOLTIP_HIDDEN);
+            boundingBox.css('opacity', '0');
+            boundingBox.css('zIndex', '0');
+        },
+
+        show: function(){
+            var boundingBox = this.boundingBox;
+
+            boundingBox.removeClass(TOOLTIP_HIDDEN);
+            boundingBox.css('opacity', '1');
+            boundingBox.css('zIndex', '1234');
+        }
+    };
+
+})(Boia);
+
+// =Combobox
+
+(function(B){
+    'use strict';
+
+    var DOT = '.',
+        TOOLTIP = 'tooltip',
+        TOOLTIP_HIDDEN = 'tooltip-hidden',
+        TOOLTIP_INNER = 'tooltip-inner';
+
+    B.Tooltip = function(config){
+
+        this.trigger = config.trigger || '';
+        this.position = config.position || 'bottom';
+        this.tipText = config.tipText || '这是一个工具条';
+
+        this._id = 'tooltip_'+Math.round(Math.random()*100000);
+
+        this.template = '<div id="'+this._id+'" class="tooltip '+this.position+'"><div class="tooltip-inner">'+this.tipText+'</div><div class="tooltip-arrow"></div></div>';
+        
+        this.initializer();
+    };
+
+    B.Tooltip.prototype = {
+        initializer: function(){
+
+            this.initComponent();
+            this.bindUI();
+        },
+
+        initComponent: function(){
+            B.one('.componentBox').prepend(this.template);
+
+            this.boundingBox = B.one('#'+this._id);
+
+            this.triggerNode = B.one(this.trigger);
+            this.contentBox = this.boundingBox.one(DOT + TOOLTIP_INNER);
+
+            // this.contentBox.text(this.tipText);
 
         },
 
-        visible: function(){
-            B.one(this.boundingBox).removeClass(TOOLTIP_HIDDEN);
+        render: function(){
+            this.renderUI();
+
+            this._setCoord();
+            return this;
+        },
+        renderUI: function(){
+        },
+        bindUI: function(){
+
+            B.on('click', B.bind(this.hide,this), 'body' );
+        },
+        _setCoord: function(){
+            var x = this.triggerNode.getX(),
+                y = this.triggerNode.getY(),
+                width = this.triggerNode.eleWidth(),
+                height = this.triggerNode.eleHeight();
+
+            this.boundingBox.css('left',x+'px');
+            this.boundingBox.css('top',y+height+'px');
+        },
+
+        hide: function(){
+            var boundingBox = this.boundingBox;
+            boundingBox.addClass(TOOLTIP_HIDDEN);
+            boundingBox.css('opacity', '0');
+            boundingBox.css('zIndex', '0');
+        },
+
+        show: function(){
+            var boundingBox = this.boundingBox;
+
+            boundingBox.removeClass(TOOLTIP_HIDDEN);
+            boundingBox.css('opacity', '1');
+            boundingBox.css('zIndex', '1234');
         }
     };
 

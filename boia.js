@@ -61,6 +61,8 @@ var Boia = {};
 
 })(Boia);
 
+//Object.prototype.toString.call([]).slice(8,-1)
+
 // =node
 (function(B) {
     'use strict';
@@ -111,7 +113,10 @@ var Boia = {};
         return this;
     };
 
-    HTMLElement.prototype.replaceClass = function() {
+    HTMLElement.prototype.replaceClass = function(oldName,newName) {
+
+        this.removeClass(oldName);
+        this.addClass(newName);
 
         return this;
     };
@@ -308,11 +313,11 @@ var Boia = {};
     'use strict';
 
     /**
-     * [removeAllClass 给nodelist删除类名]
+     * [removeClass 给nodelist删除类名]
      * @param  {[string]} cName [类名]
      * @return {[NodeList]}      
      */
-    NodeList.prototype.removeAllClass = function(cName) {
+    NodeList.prototype.removeClass = function(cName) {
 
         B.each.call(this, function(element) {
             element.removeClass(cName);
@@ -322,11 +327,11 @@ var Boia = {};
     };
 
     /**
-     * [addAllClass 给nodelist加类]
+     * [addClass 给nodelist加类]
      * @param {[string]} cName [类名]
      * @return  {[NodeList]}
      */
-    NodeList.prototype.addAllClass = function(cName) {
+    NodeList.prototype.addClass = function(cName) {
 
         B.each.call(this, function(element) {
             element.addClass(cName);
@@ -454,9 +459,9 @@ var Boia = {};
 
                 if (href === item.id) {
                     if (item.hasClass(TAB_HIDDEN)) {
-                        instance.tabs.removeAllClass(ACTIVE);
+                        instance.tabs.removeClass(ACTIVE);
                         instance.activeTab.addClass(ACTIVE);
-                        instance.contentItem.addAllClass(TAB_HIDDEN);
+                        instance.contentItem.addClass(TAB_HIDDEN);
                         item.removeClass(TAB_HIDDEN);
                     }
                 }
@@ -556,24 +561,25 @@ var Boia = {};
     'use strict';
 
     var DOT = '.',
-        TOOLTIP = 'tooltip',
-        TOOLTIP_HIDDEN = 'tooltip-hidden',
-        TOOLTIP_INNER = 'tooltip-inner';
+        COMBOBOX = 'combobox',
+        COMBOBOX_INNER = 'combobox-inner',
+        COMBOBOX_DROP = 'combobox-drop';
 
-    B.Tooltip = function(config){
+    var liTemplate = '<li class="combobox-result"></li>';    
 
-        this.trigger = config.trigger || '';
-        this.position = config.position || 'bottom';
-        this.tipText = config.tipText || '这是一个工具条';
+    B.Combobox = function(config){
 
-        this._id = 'tooltip_'+Math.round(Math.random()*100000);
+        var boundingBoxCls = config.boundingBox || '.combobox';
 
-        this.template = '<div id="'+this._id+'" class="tooltip '+this.position+'"><div class="tooltip-inner">'+this.tipText+'</div><div class="tooltip-arrow"></div></div>';
-        
+        this._id = 'combobox_'+Math.round(Math.random()*100000);
+
+        this.boundingBox = B.one(boundingBoxCls);
+        this.boundingBox.id = this._id;
+       
         this.initializer();
     };
 
-    B.Tooltip.prototype = {
+    B.Combobox.prototype = {
         initializer: function(){
 
             this.initComponent();
@@ -581,52 +587,33 @@ var Boia = {};
         },
 
         initComponent: function(){
-            B.one('.componentBox').prepend(this.template);
 
-            this.boundingBox = B.one('#'+this._id);
-
-            this.triggerNode = B.one(this.trigger);
-            this.contentBox = this.boundingBox.one(DOT + TOOLTIP_INNER);
-
-            // this.contentBox.text(this.tipText);
-
+            this.triggerNode = this.boundingBox.one('.combobox-arrow-box');
+            this.contentBox = this.boundingBox.one(DOT + COMBOBOX_INNER);
+            this.dropBox = this.boundingBox.one(DOT + COMBOBOX_DROP);
         },
 
         render: function(){
             this.renderUI();
 
-            this._setCoord();
             return this;
         },
         renderUI: function(){
         },
         bindUI: function(){
-
-            B.on('click', B.bind(this.hide,this), 'body' );
+            this.triggerNode.on('click', B.bind(this.toggle,this));
         },
-        _setCoord: function(){
-            var x = this.triggerNode.getX(),
-                y = this.triggerNode.getY(),
-                width = this.triggerNode.eleWidth(),
-                height = this.triggerNode.eleHeight();
+        toggle: function(event){
+            var instance = this,
+                triggerNode = instance.triggerNode;
 
-            this.boundingBox.css('left',x+'px');
-            this.boundingBox.css('top',y+height+'px');
-        },
-
-        hide: function(){
-            var boundingBox = this.boundingBox;
-            boundingBox.addClass(TOOLTIP_HIDDEN);
-            boundingBox.css('opacity', '0');
-            boundingBox.css('zIndex', '0');
-        },
-
-        show: function(){
-            var boundingBox = this.boundingBox;
-
-            boundingBox.removeClass(TOOLTIP_HIDDEN);
-            boundingBox.css('opacity', '1');
-            boundingBox.css('zIndex', '1234');
+            if(triggerNode.hasClass('top')) {
+                triggerNode.replaceClass('top','bottom');
+                instance.dropBox.removeClass('hide');
+            }else{
+                triggerNode.replaceClass('bottom','top');    
+                instance.dropBox.addClass('hide');         
+            }
         }
     };
 

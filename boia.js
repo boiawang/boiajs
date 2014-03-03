@@ -59,9 +59,85 @@ var Boia = {};
         }
     }; 
 
+    B.parseHashUrl = function(){
+        var hash = location.hash.slice(1),
+            arr = hash.split('&'),obj = {};
+
+        arr.forEach(function(item,i){
+            var str = item.split('=');
+            obj[str[0]] = str[1];
+        });
+
+        return obj;
+    };
+
 })(Boia);
 
 //Object.prototype.toString.call([]).slice(8,-1)
+
+(function(B){
+    var EventTarget;
+
+    EventTarget = B.EventTarget = function(){
+        this.handlers={};  //函数处理器数组 
+    };
+
+    B.EventTarget.prototype = {
+        constructor:EventTarget,
+
+        /**
+         * [addHandler 添加一个事件处理器]
+         * @param {[type]} type    [description]
+         * @param {[type]} handler [description]
+         */
+        addHandler:function(type,handler){
+            if(typeof this.handlers[type] == "undefined"){ 
+                this.handlers[type]=[]; 
+            } 
+            this.handlers[type].push(handler); 
+        }, 
+        
+        /**
+         * [fire 处罚事件]
+         * @param  {[Object]} event [事件对象]
+         * @return {[type]}       [description]
+         */
+        fire:function(event){
+
+            if(!event.target){ 
+                event.target=this; 
+            } 
+            if(this.handlers[event.type] instanceof Array){ 
+                var handlers=this.handlers[event.type]; 
+                for(var i=0,len=handlers.length;i<len;i++){ 
+                    handlers[i](event); 
+                } 
+            } 
+        }, 
+
+        /**
+         * [removeHandler 删除指定的事件]
+         * @param  {[string | array]} type    [事件类型]
+         * @param  {[string]} handler [description]
+         * @return {[type]}         [description]
+         */
+        removeHandler:function(type,handler){
+            if(this.handlers[type] instanceof Array){ 
+                var handlers=this.handlers[type]; 
+
+                for(var i=0,len = handlers.length;i<len;i++){ 
+                    if(handlers[i]===handler){ 
+                        break; 
+                    } 
+                } 
+
+                //删除指定的handler处理器 
+                handlers.splice(i,1);
+            }
+        }
+    };
+
+})(Boia);
 
 // =node
 (function(B) {
@@ -547,6 +623,8 @@ var Boia = {};
         show: function(){
             var boundingBox = this.boundingBox;
 
+            this.contentBox.text(this.tipText);
+
             boundingBox.removeClass(TOOLTIP_HIDDEN);
             boundingBox.css('opacity', '1');
             boundingBox.css('zIndex', '1234');
@@ -563,7 +641,8 @@ var Boia = {};
     var DOT = '.',
         COMBOBOX = 'combobox',
         COMBOBOX_INNER = 'combobox-inner',
-        COMBOBOX_DROP = 'combobox-drop';
+        COMBOBOX_DROP = 'combobox-drop',
+        COMBOBOX_LIST = 'combobox-result';
 
     var liTemplate = '<li class="combobox-result"></li>';    
 
@@ -598,11 +677,19 @@ var Boia = {};
 
             return this;
         },
+
         renderUI: function(){
         },
+
         bindUI: function(){
-            this.triggerNode.on('click', B.bind(this.toggle,this));
+            var instance = this;
+
+            instance.triggerNode.on('click', B.bind(instance.toggle,instance));
+            instance.dropBox.on('click', function(event){
+                instance.select(event);
+            });
         },
+
         toggle: function(event){
             var instance = this,
                 triggerNode = instance.triggerNode;
@@ -614,7 +701,73 @@ var Boia = {};
                 triggerNode.replaceClass('bottom','top');    
                 instance.dropBox.addClass('hide');         
             }
+        },
+
+        select: function(event){
+            var target = event.target;
+
+            this.boundingBox.one('.combobox-input').value = target.text();
+            this.toggle();            
         }
     };
+        
+})(Boia);
 
+// =Menu
+
+(function(B){
+    'use strict';
+
+    var DOT = '.',
+        MENU = 'menu';
+
+    B.Menu = function(config){
+
+        var boundingBoxCls = config.boundingBox || '.menu';
+
+        this._id = 'menu_'+Math.round(Math.random()*100000);
+
+        this.boundingBox = B.one(boundingBoxCls);
+        this.boundingBox.id = this._id;
+       
+        this.initializer();
+    };
+
+    B.Menu.prototype = {
+        initializer: function(){
+
+            this.initComponent();
+            this.bindUI();
+        },
+
+        initComponent: function(){
+
+        },
+
+        render: function(){
+            this.renderUI();
+
+            return this;
+        },
+
+        renderUI: function(){
+        },
+
+        bindUI: function(){
+            var instance = this;
+
+            instance.triggerNode.on('click', B.bind(instance.toggle,instance));
+            instance.dropBox.on('click', function(event){
+                instance.select(event);
+            });
+        },
+        show: function(){
+
+        },
+
+        hide: function(){
+            
+        }
+    };
+        
 })(Boia);

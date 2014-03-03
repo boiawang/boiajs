@@ -713,7 +713,7 @@ var Boia = {};
         
 })(Boia);
 
-// =Menu
+// =ContextMenu
 
 (function(B){
     'use strict';
@@ -721,7 +721,7 @@ var Boia = {};
     var DOT = '.',
         MENU = 'menu';
 
-    B.Menu = function(config){
+    B.ContextMenu = function(config){
 
         var boundingBoxCls = config.boundingBox || '.menu';
 
@@ -730,18 +730,18 @@ var Boia = {};
         this.boundingBox = B.one(boundingBoxCls);
         this.boundingBox.id = this._id;
        
-        this.initializer();
+        this.initializer(config);
     };
 
-    B.Menu.prototype = {
-        initializer: function(){
+    B.ContextMenu.prototype = {
+        initializer: function(config){
 
-            this.initComponent();
+            this.initComponent(config);
             this.bindUI();
         },
 
-        initComponent: function(){
-
+        initComponent: function(config){
+            this.areaNode = B.one(config.areaNode) || B.one('body');
         },
 
         render: function(){
@@ -756,17 +756,26 @@ var Boia = {};
         bindUI: function(){
             var instance = this;
 
-            instance.triggerNode.on('click', B.bind(instance.toggle,instance));
-            instance.dropBox.on('click', function(event){
-                instance.select(event);
+            instance.areaNode.on('contextmenu', function(event){
+                event.preventDefault();
+                instance.onContextMenu(event);
+            });
+
+            instance.boundingBox.on('click', function(){
+                
             });
         },
+        onContextMenu: function(event){
+            this.show();
+            this.boundingBox.css('left',event.pageX + 'px');
+            this.boundingBox.css('top',event.pageY + 'px');
+        },
         show: function(){
-
+            this.boundingBox.removeClass('hide');
         },
 
         hide: function(){
-            
+            this.boundingBox.addClass('hide');
         }
     };
         

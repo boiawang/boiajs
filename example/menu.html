@@ -6,33 +6,37 @@
     	<title>menu</title>
     	<style type="text/css">
     		.hide {display: none;}
+    		html{height: 100%;}
+    		body{width: 100%;height: 100%;}
+    		.menu {position: absolute;}
     	</style>
 </head>
 <body>
-	<div class="menu">
+	<div class="menu hide">
 		<div class="menu-item">
 			<div class="menu-icon"></div>
-			<div class="menu-text"></div>
+			<div class="menu-text">刷新好友列表</div>
 		</div>
 		<div class="menu-item">
 			<div class="menu-icon"></div>
-			<div class="menu-text"></div>
+			<div class="menu-text">显示在线好友</div>
 		</div>
 		<div class="menu-item">
 			<div class="menu-icon"></div>
-			<div class="menu-text"></div>
+			<div class="menu-text">隐身对该分组可见</div>
 		</div>
 		<div class="menu-item">
 			<div class="menu-icon"></div>
-			<div class="menu-text"></div>
+			<div class="menu-text">添加分组</div>
 		</div>
 	</div>
 	<script type="text/javascript">
     	(function(B){
     		'use strict';
 
-    		new B.Menu({
-    			boundingBox: '.menu'
+    		new B.ContextMenu({
+    			boundingBox: '.menu',
+    			areaNode: 'body'
     		});
 
     	})(Boia);

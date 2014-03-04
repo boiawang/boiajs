@@ -8,27 +8,68 @@
     		.hide {display: none;}
     		html{height: 100%;}
     		body{width: 100%;height: 100%;}
-    		.menu {position: absolute;}
+    		.menu {position: absolute;border: 1px solid #929292;border-radius: 5px;}
+    		.menu-item {cursor: default;}
+    		.menu-item:hover {
+    			background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #216EC6), color-stop(1, #0457B3));
+    			color: white;
+    		}
     	</style>
 </head>
 <body>
 	<div class="menu hide">
 		<div class="menu-item">
 			<div class="menu-icon"></div>
-			<div class="menu-text">刷新好友列表</div>
+			<div class="menu-text">注册新用户</div>
 		</div>
 		<div class="menu-item">
 			<div class="menu-icon"></div>
-			<div class="menu-text">显示在线好友</div>
+			<div class="menu-text">更改用户</div>
+		</div>
+		<div class="menu-sep"></div>
+		<div class="menu-item">
+			<div class="menu-icon"></div>
+			<div class="menu-text">只显示在线用户</div>
 		</div>
 		<div class="menu-item">
 			<div class="menu-icon"></div>
-			<div class="menu-text">隐身对该分组可见</div>
+			<div class="menu-text">查看历史消息(H)</div>
 		</div>
 		<div class="menu-item">
 			<div class="menu-icon"></div>
-			<div class="menu-text">添加分组</div>
+			<div class="menu-text">系统消息</div>
 		</div>
+		<div class="menu-item">
+			<div class="menu-icon"></div>
+			<div class="menu-text">发送系统消息</div>
+		</div>
+		<div class="menu-sep"></div>
+		<div class="menu-item">
+			<div class="menu-icon"></div>
+			<div class="menu-text">我的设置</div>
+		</div>
+		<div class="menu-item">
+			<div class="menu-icon"></div>
+			<div class="menu-text">系统设置</div>
+		</div>
+		<div class="menu-sep"></div>
+		<div class="menu-item">
+			<div class="menu-icon"></div>
+			<div class="menu-text">系统检测</div>
+		</div>
+		<div class="menu-item">
+			<div class="menu-icon"></div>
+			<div class="menu-text">安全中心</div>
+		</div>	
+		<div class="menu-item">
+			<div class="menu-icon"></div>
+			<div class="menu-text">帮助</div>
+		</div>
+		<div class="menu-sep"></div>
+		<div class="menu-item">
+			<div class="menu-icon"></div>
+			<div class="menu-text">退出</div>
+		</div>				
 	</div>
 	<script type="text/javascript">
     	(function(B){
@@ -36,7 +77,13 @@
 
     		new B.ContextMenu({
     			boundingBox: '.menu',
-    			areaNode: 'body'
+    			areaNode: 'body',
+    			onContextMenu: function(event){
+    				console.log(event)
+    			},
+    			onListClick: function(listNode){
+    				console.log(listNode)
+    			}
     		});
 
     	})(Boia);

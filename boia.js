@@ -83,33 +83,33 @@ var Boia = {};
     };
 
     B.EventTarget.prototype = {
-        constructor:EventTarget,
+        constructor: EventTarget,
 
         /**
          * [addHandler 添加一个事件处理器]
          * @param {[type]} type    [description]
          * @param {[type]} handler [description]
          */
-        addHandler:function(type,handler){
+        addHandler: function(type,handler){
             if(typeof this.handlers[type] == "undefined"){ 
-                this.handlers[type]=[]; 
+                this.handlers[type] = []; 
             } 
             this.handlers[type].push(handler); 
         }, 
         
         /**
-         * [fire 处罚事件]
+         * [fire 触发事件]
          * @param  {[Object]} event [事件对象]
          * @return {[type]}       [description]
          */
-        fire:function(event){
+        fire: function(event){
 
             if(!event.target){ 
-                event.target=this; 
+                event.target = this; 
             } 
             if(this.handlers[event.type] instanceof Array){ 
                 var handlers=this.handlers[event.type]; 
-                for(var i=0,len=handlers.length;i<len;i++){ 
+                for(var i = 0,len = handlers.length;i < len;i++){ 
                     handlers[i](event); 
                 } 
             } 
@@ -121,12 +121,12 @@ var Boia = {};
          * @param  {[string]} handler [description]
          * @return {[type]}         [description]
          */
-        removeHandler:function(type,handler){
+        removeHandler: function(type,handler){
             if(this.handlers[type] instanceof Array){ 
-                var handlers=this.handlers[type]; 
+                var handlers = this.handlers[type]; 
 
-                for(var i=0,len = handlers.length;i<len;i++){ 
-                    if(handlers[i]===handler){ 
+                for(var i = 0,len = handlers.length;i < len;i++){ 
+                    if(handlers[i] === handler){ 
                         break; 
                     } 
                 } 
@@ -736,6 +736,8 @@ var Boia = {};
     B.ContextMenu.prototype = {
         initializer: function(config){
 
+            this.onContextMenu = config.onContextMenu || function(event){};
+            this.onListClick = config.onListClick || function(listNode){};
             this.initComponent(config);
             this.bindUI();
         },
@@ -758,14 +760,21 @@ var Boia = {};
 
             instance.areaNode.on('contextmenu', function(event){
                 event.preventDefault();
+                instance._onContextMenu(event);
                 instance.onContextMenu(event);
             });
 
-            instance.boundingBox.on('click', function(){
-                
+            instance.boundingBox.on('click', function(event){
+                event.stopPropagation();
+                instance.onListClick(event.target);
             });
+
+            B.one('body').on('click', function(){
+                instance.hide();
+            });
+
         },
-        onContextMenu: function(event){
+        _onContextMenu: function(event){
             this.show();
             this.boundingBox.css('left',event.pageX + 'px');
             this.boundingBox.css('top',event.pageY + 'px');
@@ -776,6 +785,79 @@ var Boia = {};
 
         hide: function(){
             this.boundingBox.addClass('hide');
+        }
+    };
+        
+})(Boia);
+
+/* =MenuButton */
+(function(B){
+    'use strict';
+
+    var DOT = '.',
+        MENU_BUTTON = 'menu-button',
+        MENU_DROP = 'dropdown-toggle';
+
+    B.MenuButton = function(config){
+
+        var boundingBoxCls = config.boundingBox || '.menu-button';
+
+        this._id = 'menu-button_'+Math.round(Math.random()*100000);
+
+        this.boundingBox = B.one(boundingBoxCls);
+        this.boundingBox.id = this._id;
+       
+        this.initializer(config);
+    };
+
+    B.MenuButton.prototype = {
+        initializer: function(config){
+
+            this.initComponent(config);
+            this.bindUI();
+        },
+
+        initComponent: function(config){
+
+            this.triggerNode = this.boundingBox.one(DOT+MENU_DROP);
+            this.toggle = config.toggle || function(){};
+        },
+
+        render: function(){
+            this.renderUI();
+
+            return this;
+        },
+
+        renderUI: function(){
+        },
+
+        bindUI: function(){
+            var instance = this;
+
+            instance.triggerNode.on('click', function(event){
+                event.stopPropagation();
+                instance._toggle(event);
+            });
+
+            B.one('body').on('click', function(){
+                instance.hideMenu();
+            });
+
+        },
+        _toggle: function(){
+            if(this.boundingBox.hasClass('open')){
+                this.hideMenu();
+            }else {
+                this.showMenu();
+            }
+        },
+        showMenu: function(){
+            this.boundingBox.addClass('open');
+        },
+
+        hideMenu: function(){
+            this.boundingBox.removeClass('open');
         }
     };
         

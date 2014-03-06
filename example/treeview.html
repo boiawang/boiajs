@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>treeview</title>
+	<script type="text/javascript" src="../boia.js"></script>
+</head>
+<body>
+	<div class="treeview"></div>
+	<script type="text/javascript">
+		(function(B){
+	    		'use strict';
+
+	    		new B.TreeView({
+	    			boundingBox: '.treeview',
+	    			children: [{
+	    				id: 1,
+	    				label: '我的好友',
+	    				total: 18,
+	    				item: [{
+	    					label: '小明'
+	    				},{
+	    					label: '小华'
+	    				}]
+	    			},{
+	    				id: 2,
+	    				label: '黑名单',
+	    				total: 20,
+	    				item: [{
+	    					label: '小智'
+	    				}]
+	    			}]
+	    		}).render();
+
+    		})(Boia);
+	</script>
+</body>
+</html>

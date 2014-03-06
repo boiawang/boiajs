@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>animal</title>
+	<style type="text/css">
+		#container{ border:1px solid #000; width:500px; height:400px;}
+		#aa{ border:1px solid #000; width:100px; height:40px; background-color:#0f0; 
+		     position:absolute; left:50px; top:50px; }
+		#bb{ border:1px solid #000; width:500px; height:40px; margin-top:100px;}
+		#cc{ border:1px solid #000; width:500px; height:40px;}
+	</style>
+	<script type="text/javascript" src="../tween.js"></script>
+</head>
+<body>
+	<div id="container">
+		<input id="Abegin" type="button" value="开始" /> 
+		<input id="Apause" type="button" value="暂停" /> 
+		<input onclick="location.reload()" type="button" value="刷新网页" />
+		<div id="aa"><br /></div>
+		<div id="bb">dfdfddfsd</div>
+		<div id="cc">gregreger</div>
+	</div>
+	<script type="text/javascript">
+	        var bbtn = document.getElementById("Abegin"),
+	            pbtn = document.getElementById("Apause");
+	        var a;
+	        bbtn.onclick = function () {
+	            a = Boia.anim("aa", {
+	                    left: '200px',
+	                    top: '200px',
+	                    width: '200px',
+	                    height: '200px',
+	                    backgroundColor: '#f00',
+	                    borderWidth: '8px' 
+	                }, 4000, 'Tween.Bounce.easeInOut', {
+	                    start: function (el) { el.innerHTML = 'start!'; },  
+	                    complete: function (el) { el.innerHTML = 'Completed!'; }
+	                }
+	            );
+	        }
+	        pbtn.onclick = function () {
+	            a.pause();
+	        }
+	        Boia.anim("bb", {
+	                marginTop:'160px',
+	                opacity:0.1,
+		            width: '200px',
+		            height: '200px',
+		            borderWidth: '8px'
+		        }, 2000, 'Tween.Bounce.easeIn', {
+		            start: function (el) { el.innerHTML = 'start!'; }, 
+		            complete: function (el) { el.innerHTML = 'Completed!'; }
+		        }
+	        );
+	</script>
+</body>
+</html>

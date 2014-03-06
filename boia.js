@@ -1,4 +1,4 @@
-var Boia = {};
+var Boia = Boia || {};
 
 
 // =Global method
@@ -323,14 +323,6 @@ var Boia = {};
 
     HTMLElement.prototype.append = function(content) {
 
-        this.innerHTML += content;
-
-        return this;
-        
-    };     
-
-     HTMLElement.prototype.prepend = function(content) {
-
         var div = document.createElement('div').cloneNode(), nodes = null,
             fragment = document.createDocumentFragment();
 
@@ -347,7 +339,25 @@ var Boia = {};
         nodes = null;
         fragment = null;       
 
-        return this;
+        return this;        
+        
+    };     
+
+     HTMLElement.prototype.prepend = function(content) {
+
+        var divTemp = document.createElement('div'), nodes = null
+            , fragment = document.createDocumentFragment();
+
+        divTemp.innerHTML = html;
+        nodes = divTemp.childNodes;
+        for (var i=0, length=nodes.length; i<length; i+=1) {
+           fragment.appendChild(nodes[i].cloneNode(true));
+        }
+        // 插入到容器的前面 - 差异所在
+        this.insertBefore(fragment, this.firstChild);
+        // 内存回收？
+        nodes = null;
+        fragment = null;
         
     };        
 
@@ -487,7 +497,7 @@ var Boia = {};
 
         /**
          * [_tabClick ]
-         * @param  {[Object]} 			event
+         * @param  {[Object]} 	         event
          * @return {[undefined]}       处理点击tab
          */
         _tabClick: function(event) {
@@ -861,4 +871,93 @@ var Boia = {};
         }
     };
         
+})(Boia);
+
+/* =treeView */
+
+(function(B){
+    'use strict';
+
+    var DOT = '.',
+        TREE_HITAREA = 'tree-hitarea',
+        TREE_VIEW_CONTENT = 'tree-view-content',
+        TREE_NODE = 'tree-node',
+        TREE_NODE_CONTENT = 'tree-node-content',
+        TREE_CONTAINER = 'tree-container',
+        TREE_LABEL = 'tree-label';
+
+    var liNodeTpl = '<li class='+TREE_NODE+'>'+
+                    '<div class='+TREE_NODE_CONTENT+'>'+
+                    '<span class='+TREE_LABEL+'></span></div>'+
+                    '<ul class='+TREE_CONTAINER+'></ul>'+'</li>';
+
+    B.TreeView = function(config){
+        var boundingBoxCls = config.boundingBox || '.treeview';
+
+        this._id = 'treeview_'+Math.round(Math.random()*100000);
+
+        this.boundingBox = B.one(boundingBoxCls);
+        this.boundingBox.id = this._id;
+
+        this.initializer(config);
+    };
+
+    B.TreeView.prototype = {
+        initializer: function(config){
+
+            this.children = config.children || [];
+            this.initComponent(config);
+            this.bindUI();
+        },
+
+        initComponent: function(config){
+            this.boundingBox.append('<ul class='+TREE_VIEW_CONTENT+'></ul>');
+
+           
+            this.contentBox = this.boundingBox.one(DOT + TREE_VIEW_CONTENT);
+        },
+
+        render: function(){
+            this.renderUI();
+
+            return this;
+        },
+
+        renderUI: function(){
+            var instance = this;
+
+            instance._generateTree(instance.children);
+        },
+
+        _generateTree: function(children,parentNode){
+            var instance = this;
+
+            children.forEach(function(child, item){
+                var node = instance._insertNode(child,parentNode);
+
+                if(child.item){
+                    instance._generateTree(child.item,node);
+                }
+            });
+        },
+
+        _insertNode: function(item, parentNode){
+            var instance = this;
+
+            if(!parentNode) parentNode = instance.contentBox;
+
+            parentNode.append(liNodeTpl);
+
+            parentNode.lastElementChild.one(DOT + TREE_LABEL).text(item.label);
+
+            return parentNode.lastElementChild.one(DOT+TREE_CONTAINER);
+        },
+
+        bindUI: function(){
+            var instance = this;
+
+
+        }
+    };
+
 })(Boia);

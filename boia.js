@@ -7,11 +7,11 @@ var Boia = Boia || {};
 
     B.each = Array.prototype.forEach;
 
-    B.bind = function(fn,context, args){
+    B.bind = function (fn,context, args){
         return fn.bind(context,args);
     };
 
-    B.one = function(selector) {
+    B.one = function (selector) {
 
         var node = null,
             d = document;
@@ -21,7 +21,7 @@ var Boia = Boia || {};
         return node;
     };
 
-    B.all = function(selector) {
+    B.all = function (selector) {
 
         var nodeList = null,
             d = document;
@@ -31,7 +31,7 @@ var Boia = Boia || {};
         return nodeList;
     };
 
-    B.on = function(type, fn, selector) {
+    B.on = function (type, fn, selector) {
 
         B.one(selector) && B.one(selector).addEventListener(type, fn);
     };
@@ -41,7 +41,7 @@ var Boia = Boia || {};
      * [getViewport 获得视口宽高]
      * @return {[Object]} [包含高宽的对象]
      */
-    B.getViewport = function() {
+    B.getViewport = function () {
 
         var width, height;
         
@@ -59,11 +59,11 @@ var Boia = Boia || {};
         }
     }; 
 
-    B.parseHashUrl = function(){
+    B.parseHashUrl = function (){
         var hash = location.hash.slice(1),
             arr = hash.split('&'),obj = {};
 
-        arr.forEach(function(item,i){
+        arr.forEach(function (item,i){
             var str = item.split('=');
             obj[str[0]] = str[1];
         });
@@ -74,8 +74,105 @@ var Boia = Boia || {};
 })(Boia);
 
 //Object.prototype.toString.call([]).slice(8,-1)
+//B.Lang.type  判断类型
 
-(function(B){
+(function(B) {
+
+    var L = {},
+    
+    TYPES = {
+        'undefined'        : 'undefined',
+        'number'           : 'number',
+        'boolean'          : 'boolean',
+        'string'           : 'string',
+        '[object Function]': 'function',
+        '[object RegExp]'  : 'regexp',
+        '[object Array]'   : 'array',
+        '[object Date]'    : 'date',
+        '[object Error]'   : 'error'
+    },
+
+    SUBREGEX = /\{\s*([^|}]+?)\s*(?:\|([^}]*))?\s*\}/g,
+
+    WHITESPACE = "\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u180E\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF",
+    WHITESPACE_CLASS = "[\x09-\x0D\x20\xA0\u1680\u180E\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]+",
+    TRIM_LEFT_REGEX  = new RegExp("^" + WHITESPACE_CLASS),
+    TRIM_RIGHT_REGEX = new RegExp(WHITESPACE_CLASS + "$"),
+    TRIMREGEX        = new RegExp(TRIM_LEFT_REGEX.source + "|" + TRIM_RIGHT_REGEX.source, "g");
+
+    L.isBoolean = function(o) {
+        return typeof o === 'boolean';
+    };
+
+    L.isDate = function(o) {
+        return L.type(o) === 'date' && o.toString() !== 'Invalid Date' && !isNaN(o);
+    };
+
+    L.isArray = Array.isArray || function(o) {
+        return L.type(o) === 'array';
+    };
+
+    L.isFunction = function(o) {
+        return L.type(o) === 'function';
+    };
+
+    L.isNull = function(o) {
+        return o === null;
+    };
+
+    L.isNumber = function(o) {
+        return typeof o === 'number' && isFinite(o);
+    };
+
+    L.isObject = function(o, failfn) {
+        var t = typeof o;
+        return (o && (t === 'object' ||
+            (!failfn && (t === 'function' || L.isFunction(o))))) || false;
+    };
+
+    L.isRegExp = function(value) {
+        return L.type(value) === 'regexp';
+    };
+
+    L.isString = function(o) {
+        return typeof o === 'string';
+    };
+
+    L.isUndefined = function(o) {
+        return typeof o === 'undefined';
+    };
+
+    L.now = Date.now || function () {
+        return new Date().getTime();
+    };
+
+    L.sub = function(s, o) {
+        return s.replace ? s.replace(SUBREGEX, function (match, key) {
+            return L.isUndefined(o[key]) ? match : o[key];
+        }) : s;
+    };
+
+
+    L.trim = String.prototype.trim && !WHITESPACE.trim() ? function(s) {
+            return s && s.trim ? s.trim() : s;
+        } : function (s) {
+            try {
+                return s.replace(TRIMREGEX, '');
+            } catch (e) {
+                return s;
+            }
+    };
+
+    L.type = function(o) {
+        return TYPES[typeof o] || TYPES[Object.prototype.toString.call(o)] || (o ? 'object' : 'null');
+        // return Object.prototype.toString.call(o).match(/\[object (.*?)\]/)[1].toLowerCase();
+    };
+
+    B.Lang = L;
+
+})(Boia);
+
+(function(B) {
     var EventTarget;
 
     EventTarget = B.EventTarget = function(){
@@ -561,7 +658,7 @@ var Boia = Boia || {};
 
 // =Tooltip
 
-(function(B){
+(function(B) {
     'use strict';
 
     var DOT = '.',
@@ -645,7 +742,7 @@ var Boia = Boia || {};
 
 // =Combobox
 
-(function(B){
+(function(B) {
     'use strict';
 
     var DOT = '.',
@@ -725,7 +822,7 @@ var Boia = Boia || {};
 
 // =ContextMenu
 
-(function(B){
+(function(B) {
     'use strict';
 
     var DOT = '.',
@@ -801,7 +898,7 @@ var Boia = Boia || {};
 })(Boia);
 
 /* =MenuButton */
-(function(B){
+(function(B) {
     'use strict';
 
     var DOT = '.',
@@ -875,7 +972,7 @@ var Boia = Boia || {};
 
 /* =treeView */
 
-(function(B){
+(function(B) {
     'use strict';
 
     var DOT = '.',

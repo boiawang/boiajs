@@ -73,9 +73,44 @@ var Boia = Boia || {};
 
 })(Boia);
 
+(function(B) {
+    var lastTime = 0;
+    var vendors = ['webkit', 'moz'];
+
+    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        B.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
+        B.cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame'] ||    // name has changed in Webkit
+                        window[vendors[x] + 'CancelRequestAnimationFrame'];
+    }
+
+    if (!window.requestAnimationFrame) {
+
+        B.requestAnimationFrame = function(callback, element) {
+
+            var currTime = new Date().getTime();
+            var timeToCall = Math.max(0, 16.7 - (currTime - lastTime));
+
+            var id = window.setTimeout(function() {
+                callback(currTime + timeToCall);
+            }, timeToCall);
+
+            lastTime = currTime + timeToCall;
+            return id;
+        };
+    }
+
+    if (!window.cancelAnimationFrame) {
+
+        B.cancelAnimationFrame = function(id) {
+            clearTimeout(id);
+        };
+        
+    }
+
+})(Boia);
+
 //Object.prototype.toString.call([]).slice(8,-1)
 //B.Lang.type  判断类型
-
 (function(B) {
 
     var L = {},

@@ -4,55 +4,87 @@
 	<meta charset="UTF-8">
 	<title>animal</title>
 	<style type="text/css">
-		#container{ border:1px solid #000; width:500px; height:400px;}
-		#aa{ border:1px solid #000; width:100px; height:40px; background-color:#0f0; 
-		     position:absolute; left:50px; top:50px; }
-		#bb{ border:1px solid #000; width:500px; height:40px; margin-top:100px;}
-		#cc{ border:1px solid #000; width:500px; height:40px;}
+		.move{
+			position: relative;
+			font-size: 32px;
+			margin: 100px;
+			letter-spacing: 15px;
+			color: red;
+			font-weight: bold;
+			/*left: 100px;right: 100px;
+			background: #ccc;
+			width: 50px;height: 50px;*/
+		}
+		.single {
+			display: inline-block;
+			position: absolute;
+		}
+		.single1 {
+			left: 5px;
+		}
+		.single2 {
+			left: 35px;
+		}
+		.single3 {
+			left: 65px;
+		}
+		.single4 {
+			left: 95px;
+		}
+		.single5 {
+			left: 125px;
+		}
+		.single6 {
+			left: 155px;
+		}
+		.single7 {
+			left: 185px;
+		}				
 	</style>
+	<script type="text/javascript" src="../boia.js"></script>
 	<script type="text/javascript" src="../tween.js"></script>
 </head>
 <body>
 	<div id="container">
-		<input id="Abegin" type="button" value="开始" /> 
-		<input id="Apause" type="button" value="暂停" /> 
-		<input onclick="location.reload()" type="button" value="刷新网页" />
-		<div id="aa"><br /></div>
-		<div id="bb">dfdfddfsd</div>
-		<div id="cc">gregreger</div>
+		<div class="move">
+			<span class="single single1">L</span>
+			<span class="single single2">O</span>
+			<span class="single single3">A</span>
+			<span class="single single4">D</span>
+			<span class="single single5">I</span>
+			<span class="single single6">N</span>
+			<span class="single single7">G</span>
+		</div>
 	</div>
 	<script type="text/javascript">
-	        var bbtn = document.getElementById("Abegin"),
-	            pbtn = document.getElementById("Apause");
-	        var a;
-	        bbtn.onclick = function () {
-	            a = Boia.anim("aa", {
-	                    left: '200px',
-	                    top: '200px',
-	                    width: '200px',
-	                    height: '200px',
-	                    backgroundColor: '#f00',
-	                    borderWidth: '8px' 
-	                }, 4000, 'Tween.Bounce.easeInOut', {
-	                    start: function (el) { el.innerHTML = 'start!'; },  
-	                    complete: function (el) { el.innerHTML = 'Completed!'; }
-	                }
-	            );
-	        }
-	        pbtn.onclick = function () {
-	            a.pause();
-	        }
-	        Boia.anim("bb", {
-	                marginTop:'160px',
-	                opacity:0.1,
-		            width: '200px',
-		            height: '200px',
-		            borderWidth: '8px'
-		        }, 2000, 'Tween.Bounce.easeIn', {
-		            start: function (el) { el.innerHTML = 'start!'; }, 
-		            complete: function (el) { el.innerHTML = 'Completed!'; }
-		        }
-	        );
+		(function(B) {
+	       		
+			var start = 0,during = 40,b = 0, c = 20,x,top;
+			var single = B.one('.move').all('.single'), length = single.length;
+
+			function _run(){
+				top = B.Tween.Quad.easeOut(start,b,c,during);
+				single[0].css('top','-'+top+'px');
+				if(start < during){
+					start++;
+					webkitRequestAnimationFrame(_run);
+				}
+				/*x = B.Tween.Quad.easeIn(start,b,c,during);
+
+				B.one('.move').css('left', x+'px');
+				if(start < during){
+					start++;
+					webkitRequestAnimationFrame(_run);
+				}*/
+
+			}
+
+			_run();
+			/*for(var i = 0;i < length;i++){
+				_run(single[i].text());
+			}*/
+
+	        	})(Boia);
 	</script>
 </body>
 </html>

@@ -1,81 +1,7 @@
 var Boia = Boia || {};
 
-
-// =Global method
-(function(B) {
-    'use strict';
-
-    B.each = Array.prototype.forEach;
-
-    B.bind = function (fn,context, args){
-        return fn.bind(context,args);
-    };
-
-    B.one = function (selector) {
-
-        var node = null,
-            d = document;
-
-        node = d.querySelector(selector);
-
-        return node;
-    };
-
-    B.all = function (selector) {
-
-        var nodeList = null,
-            d = document;
-
-        nodeList = d.querySelectorAll(selector);
-
-        return nodeList;
-    };
-
-    B.on = function (type, fn, selector) {
-
-        B.one(selector) && B.one(selector).addEventListener(type, fn);
-    };
-
-
-    /**
-     * [getViewport 获得视口宽高]
-     * @return {[Object]} [包含高宽的对象]
-     */
-    B.getViewport = function () {
-
-        var width, height;
-        
-        if (d.compatMode === 'BackCompat'){
-            width = d.body.clientWidth;
-            height = d.body.clientHeight;
-        }else {
-            width = d.documentElement.clientWidth;
-            height = d.documentElement.clientHeight;
-        }
-
-        return {
-            width: width,
-            height: height
-        }
-    }; 
-
-    B.parseHashUrl = function (){
-        var hash = location.hash.slice(1),
-            arr = hash.split('&'),obj = {};
-
-        arr.forEach(function (item,i){
-            var str = item.split('=');
-            obj[str[0]] = str[1];
-        });
-
-        return obj;
-    };
-
-})(Boia);
-
 //Object.prototype.toString.call([]).slice(8,-1)
 //B.Lang.type  判断类型
-
 (function(B) {
 
     var L = {},
@@ -172,6 +98,194 @@ var Boia = Boia || {};
 
 })(Boia);
 
+// =Global method
+(function(B) {
+    'use strict';
+
+    var hasOwn   = Object.prototype.hasOwnProperty,
+        OP = Object.prototype,
+        isObject = B.Lang.isObject;
+
+    B.each = Array.prototype.forEach;
+
+    B.bind = function (fn,context, args){
+        return fn.bind(context,args);
+    };
+
+    B.one = function (selector) {
+
+        var node = null,
+            d = document;
+
+        node = d.querySelector(selector);
+
+        return node;
+    };
+
+    B.all = function (selector) {
+
+        var nodeList = null,
+            d = document;
+
+        nodeList = d.querySelectorAll(selector);
+
+        return nodeList;
+    };
+
+    B.on = function (type, fn, selector) {
+
+        B.one(selector) && B.one(selector).addEventListener(type, fn);
+    };
+
+    B.extend = function(r, s, px, sx) {
+        if (!s || !r) {
+            throw new Errow('请输入基类和父类');
+        }
+        
+        //兼容版本
+        /*Object.create = Object.create || function (o) {
+
+            function F() {}
+            F.prototype = o;
+            return new F();
+
+        };*/
+
+        var sp = s.prototype, rp = Object.create(sp);
+        r.prototype = rp;
+        
+        // 因为原型被覆盖.所以原型的prototype指向了F 要修正回来
+        // 具体constructor的原理可参考http://www.cnblogs.com/objectorl/archive/2009/09/02/1632715.html
+        rp.constructor = r;
+
+        // 将子类的自定义属性superclass指向父类的原型  这样就方便引用到原型实例
+        // r.superclass.constructor.call(this, options) 就可以实现属性冒充.继承父类的构造属性
+        r.superclass = sp;
+     
+        // 如果父类不是Object但constructor却指向了Object, 表示父类的原型也被覆盖了 所以要保证正确
+        // 这样r.superclass.constructor才能正确指向父类
+        if (s != Object && sp.constructor == OP.constructor) {
+            sp.constructor = s;
+        }
+     
+        // add prototype overrides
+        if (px) {
+            B.mix(rp, px, true);
+        }
+     
+        // add object overrides
+        if (sx) {
+            B.mix(r, sx, true);
+        }
+     
+        return r;
+    };
+
+    B.mix = function(receiver, supplier, overwrite, whitelist, mode, merge) {
+        var alwaysOverwrite, exists, from, i, key, len, to;
+     
+        if (!receiver || !supplier) {
+            return receiver || B;
+        }
+     
+        if (mode) {
+            if (mode === 2) {
+                B.mix(receiver.prototype, supplier.prototype, overwrite,
+                        whitelist, 0, merge);
+            }
+     
+            from = mode === 1 || mode === 3 ? supplier.prototype : supplier;
+            to   = mode === 1 || mode === 4 ? receiver.prototype : receiver;
+     
+            if (!from || !to) {
+                return receiver;
+            }
+        } else {
+            from = supplier;
+            to   = receiver;
+        }
+     
+        alwaysOverwrite = overwrite && !merge;
+     
+        if (whitelist) {
+            for (i = 0, len = whitelist.length; i < len; ++i) {
+                key = whitelist[i];
+
+                if (!hasOwn.call(from, key)) {
+                    continue;
+                }
+     
+                exists = alwaysOverwrite ? false : key in to;
+     
+                if (merge && exists && isObject(to[key], true)
+                        && isObject(from[key], true)) {
+
+                    B.mix(to[key], from[key], overwrite, null, 0, merge);
+                } else if (overwrite || !exists) {
+
+                    to[key] = from[key];
+                }
+            }
+        } else {
+            for (key in from) {
+
+                if (!hasOwn.call(from, key)) {
+                    continue;
+                }
+     
+                exists = alwaysOverwrite ? false : key in to;
+     
+                if (merge && exists && isObject(to[key], true)
+                        && isObject(from[key], true)) {
+                    B.mix(to[key], from[key], overwrite, null, 0, merge);
+                } else if (overwrite || !exists) {
+                    to[key] = from[key];
+                }
+            }
+            /*if (B.Object._hasEnumBug) {
+                B.mix(to, from, overwrite, Y.Object._forceEnum, mode, merge);
+            }*/
+        }
+     
+        return receiver;
+    };
+
+    /**
+     * [getViewport 获得视口宽高]
+     * @return {[Object]} [包含高宽的对象]
+     */
+    B.getViewport = function () {
+
+        var width, height;
+        
+        if (d.compatMode === 'BackCompat'){
+            width = d.body.clientWidth;
+            height = d.body.clientHeight;
+        }else {
+            width = d.documentElement.clientWidth;
+            height = d.documentElement.clientHeight;
+        }
+
+        return {
+            width: width,
+            height: height
+        }
+    }; 
+
+    B.parseHashUrl = function (){
+        var hash = location.hash.slice(1),
+            arr = hash.split('&'),obj = {};
+
+        arr.forEach(function (item,i){
+            var str = item.split('=');
+            obj[str[0]] = str[1];
+        });
+
+        return obj;
+    };
+
+})(Boia);
+
 (function(B) {
     var EventTarget;
 
@@ -241,6 +355,7 @@ var Boia = Boia || {};
     'use strict';
 
     var d = document;
+    var isNumber = B.Lang.isNumber;
 
     HTMLElement = typeof(HTMLElement) != 'undefiend' ? HTMLElement : Element;
 
@@ -383,6 +498,7 @@ var Boia = Boia || {};
      * @return {[type]}           [description]
      */
     HTMLElement.prototype.css = function(styleName, val) {
+        if(isNumber(val)) val = val.toString();
 
         if(val) {
             this.style[styleName] = val;
@@ -393,6 +509,22 @@ var Boia = Boia || {};
         return this;
 
     };     
+
+    HTMLElement.prototype.hide = function() {
+
+        this.addClass('hide');
+
+        return this;
+        
+    };  
+
+    HTMLElement.prototype.show = function() {
+
+        this.removeClass('hide');
+
+        return this;
+        
+    };      
 
     HTMLElement.prototype.text = function(content) {
 
@@ -445,7 +577,7 @@ var Boia = Boia || {};
         var divTemp = document.createElement('div'), nodes = null
             , fragment = document.createDocumentFragment();
 
-        divTemp.innerHTML = html;
+        divTemp.innerHTML = content;
         nodes = divTemp.childNodes;
         for (var i=0, length=nodes.length; i<length; i+=1) {
            fragment.appendChild(nodes[i].cloneNode(true));
@@ -540,20 +672,78 @@ var Boia = Boia || {};
 
 })(Boia);
 
+(function(B){
+
+    B.Anim = function(config){
+        this.node = B.one(config.node) || null;
+        this.to = config.to || {};
+        this.from = config.from || {};
+    };
+
+    B.Anim.prototype = {
+
+        run: function(){
+            var to = this.to;
+            var node = this.node;
+
+            for(p in  to)  {
+                node.css(p,to[p]);
+            }
+
+        }
+
+    };
+
+})(Boia);
+
 // =Widget
 (function(B) {
     'use strict';
 
-    B.Widget = function() {
+    B.Widget = function(config) {
 
+        this.width = config.width || 0;
+        this.height = config.height || 0;
+
+        this.boundingBox = config.boundingBox || '';
+        this.visible = config.visible || true;
+
+        this.strings = config.strings || 'widget';
+        
+        this.initializer();
     };
 
-    B.Widget.prototype = {};
+    B.Widget.NAME = "widget";
+
+    B.Widget.prototype = {
+        initializer: function(config){
+        },
+        render: function(){
+        }
+    };
+
+})(Boia);
+
+(function(B){
+
+    var TestWidget = function(config){
+        config = config || {};
+
+        //调用父类的构造函数
+        TestWidget.superclass.constructor.call(this, config);
+    };
+
+    B.extend(TestWidget, B.Widget, {
+        say: function(){
+            console.log('say');
+        }
+    });
+
+    B.TestWidget = TestWidget;
 
 })(Boia);
 
 // =Tabview
-
 (function(B) {
     'use strict';
 

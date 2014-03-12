@@ -4,45 +4,18 @@
 	<meta charset="UTF-8">
 	<title>animal</title>
 	<style type="text/css">
-		.move{
-			position: relative;
-			font-size: 32px;
-			margin: 100px;
-			letter-spacing: 15px;
-			color: red;
-			font-weight: bold;
-			/*left: 100px;right: 100px;
-			background: #ccc;
-			width: 50px;height: 50px;*/
-		}
-		.single {
-			display: inline-block;
-			position: absolute;
-		}
-		.single1 {
-			left: 5px;
-		}
-		.single2 {
-			left: 35px;
-		}
-		.single3 {
-			left: 65px;
-		}
-		.single4 {
-			left: 95px;
-		}
-		.single5 {
-			left: 125px;
-		}
-		.single6 {
-			left: 155px;
-		}
-		.single7 {
-			left: 185px;
-		}				
+		.move{ position: relative; font-size: 40px; margin: 100px; letter-spacing: 15px; color: red; font-weight: bold; }
+		.single { display: inline-block; position: absolute; }
+		.single1 { left: 5px;  }
+		.single2 { left: 45px;  }
+		.single3 { left: 75px;  }
+		.single4 { left: 105px; }
+		.single5 { left: 135px; }
+		.single6 { left: 165px; }
+		.single7 { left: 195px; }				
 	</style>
-	<script type="text/javascript" src="../boia.js"></script>
 	<script type="text/javascript" src="../tween.js"></script>
+	<script type="text/javascript" src="../boia.js"></script>
 </head>
 <body>
 	<div id="container">
@@ -59,30 +32,52 @@
 	<script type="text/javascript">
 		(function(B) {
 	       		
-			var start = 0,during = 40,b = 0, c = 20,x,top;
-			var single = B.one('.move').all('.single'), length = single.length;
+	       		var anim = new B.Anim({
+	       			node: '.move',
+	       			to: {
+	       				opacity: 0
+	       			}
+	       		}).run();
+			/*var start = 0,during = 5,b = 0, c = 40,x,top;
+			var single = B.one('.move').all('.single'), length = single.length, loop = 0;
 
-			function _run(){
+			function _runTop() {
 				top = B.Tween.Quad.easeOut(start,b,c,during);
-				single[0].css('top','-'+top+'px');
+				single[loop].css('top','-'+top+'px');
 				if(start < during){
 					start++;
-					webkitRequestAnimationFrame(_run);
+					webkitRequestAnimationFrame(function(){
+						_runTop(loop);
+					});
+				}else {
+					webkitRequestAnimationFrame(function(){
+						_runBottom(loop);
+					});	
 				}
-				/*x = B.Tween.Quad.easeIn(start,b,c,during);
-
-				B.one('.move').css('left', x+'px');
-				if(start < during){
-					start++;
-					webkitRequestAnimationFrame(_run);
-				}*/
-
 			}
 
-			_run();
-			/*for(var i = 0;i < length;i++){
-				_run(single[i].text());
-			}*/
+			function _runBottom() {
+				top = B.Tween.Bounce.easeInOut(start,b,c,during);
+				single[loop].css('top','-'+top+'px');
+
+				if(start > 0) {
+					start--;
+					webkitRequestAnimationFrame(function(){
+						_runBottom(loop);
+					});
+				}else {
+					if(loop < (length-1)){
+						loop++;	
+					}else{
+						loop = 0;
+					}
+					webkitRequestAnimationFrame(function(){
+						_runTop(loop);
+					});
+				}
+			}
+
+			webkitRequestAnimationFrame(_runTop);*/
 
 	        	})(Boia);
 	</script>

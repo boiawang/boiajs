@@ -2,7 +2,7 @@ var Boia = Boia || {};
 
 (function (B) {
 
-    B.Tween = {
+    var Tween = B.Tween = {
         //b为初始值 c为变化值 d为持续时间 t为开始时间
         // t: current time（当前时间）；
         // b: beginning value（初始值）；

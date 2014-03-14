@@ -106,7 +106,12 @@ var Boia = Boia || {};
         OP = Object.prototype,
         isObject = B.Lang.isObject;
 
-    B.each = Array.prototype.forEach;
+    B.each = function(arr,fn,context){
+
+        if(Array.prototype.forEach){
+            arr.forEach(fn,context)
+        }
+    };
 
     B.bind = function (fn,context, args){
         return fn.bind(context,args);
@@ -286,6 +291,7 @@ var Boia = Boia || {};
 
 })(Boia);
 
+// =EventTarget
 (function(B) {
     var EventTarget;
 
@@ -409,9 +415,10 @@ var Boia = Boia || {};
         return this;
     };
 
-    HTMLElement.prototype.on = function(type, fn) {
+    HTMLElement.prototype.on = function(type, fn, context) {
+        var context = context || this;
 
-        this.addEventListener(type, fn);
+        this.addEventListener(type, fn, context);
 
         return this;
     };
@@ -503,7 +510,7 @@ var Boia = Boia || {};
         if(val) {
             this.style[styleName] = val;
         }else {
-            return this.style[styleName];
+            return getComputedStyle(this)[styleName];
         }
 
         return this;
@@ -634,7 +641,7 @@ var Boia = Boia || {};
      */
     NodeList.prototype.removeClass = function(cName) {
 
-        B.each.call(this, function(element) {
+        Array.prototype.forEach.call(this, function(element) {
             element.removeClass(cName);
         });
 
@@ -648,7 +655,7 @@ var Boia = Boia || {};
      */
     NodeList.prototype.addClass = function(cName) {
 
-        B.each.call(this, function(element) {
+        Array.prototype.forEach.call(this, function(element) {
             element.addClass(cName);
         });
 
@@ -661,10 +668,11 @@ var Boia = Boia || {};
      * @param  {Function} fn   事件处理函数
      * @return  {[NodeList]}
      */
-    NodeList.prototype.on = function(type, fn) {
+    NodeList.prototype.on = function(type, fn, context) {
+        var context = context || this;
 
-        B.each.call(this, function(element) {
-            element.on(type, fn);
+        Array.prototype.forEach.call(this, function(element) {
+            element.on(type, fn, context);
         });
 
         return this;
@@ -672,26 +680,155 @@ var Boia = Boia || {};
 
 })(Boia);
 
+// =Anim
 (function(B){
 
+    var _timer,_running = null;
+
     B.Anim = function(config){
+
         this.node = B.one(config.node) || null;
         this.to = config.to || {};
         this.from = config.from || {};
+        this.easing = config.easing || B.Anim.DEFAULT_EASING;
+        this.running = false;
+        this.paused = false;
+        this.reverse = config.reverse || false;
+        this.duration = config.duration || 2;
+        this.startTime = 0;
+    };    
+
+    if(B.Tween) {
+        B.Anim.DEFAULT_EASING = B.Tween.Linear
+    }
+
+    B.Anim._intervalTime = 20;
+
+    B.Anim.RE_DEFAULT_UNIT = /^width|height|top|right|bottom|left|margin.*|padding.*|border.*$/i;
+
+    B.Anim._startTimer = function() {
+        if (!_timer) {
+            _timer = setInterval(B.Anim._runFrame, B.Anim._intervalTime);
+            // _timer = webkitRequestAnimationFrame();
+        }
+    };
+
+    B.Anim._stopTimer = function() {
+        clearInterval(_timer);
+        _timer = 0;
+    };
+
+    B.Anim._runFrame = function(){
+        var done = false;
+
+        if(_running._runFrame){
+            done = false;
+            _running._runFrame();
+        }
+
+        if(done) {
+            B.Anim._stopTimer();
+        }
     };
 
     B.Anim.prototype = {
 
         run: function(){
-            var to = this.to;
-            var node = this.node;
 
-            for(p in  to)  {
-                node.css(p,to[p]);
+            if(this.paused) {
+                this._resume();
+            }else if(!this.running){
+                this._start();
             }
 
-        }
+            return this;
+        },
 
+        _start: function(){
+            _running = this;
+
+            if(!this.paused) {
+                this._initAnimAttr();
+            }
+            
+            B.Anim._startTimer();
+        },
+
+        _resume: function(){
+            _running = this;
+            B.Anim._startTimer();
+        },
+
+        _paused: function(){
+            this.paused = true;
+            _running = null;
+
+            B.Anim._stopTimer();
+        },
+
+        _runFrame: function(){
+
+            
+            this.startTime++;
+
+            B.each(this._runtimeAttr.initStatus, function(item,index){
+
+                midVal = this.easing(this.startTime, item.iVal, item.cVal, this._runtimeAttr.duration);
+
+                if(this.startTime <= this._runtimeAttr.duration) {
+                    this._setStyle(item.name,midVal);
+                }else {
+                    _running = null;
+                    this._paused();
+                }
+            
+            },this);
+        },
+
+        _setStyle: function(name,val){
+            val += '';
+
+            if(B.Anim.RE_DEFAULT_UNIT.test(name)) {
+                val += 'px';
+            }
+            
+            this.node.css(name,val);
+        },
+
+        /**
+         * @method  _initAnimAttr 初始化动画属性
+         * @return {[type]} [description]
+         */
+        _initAnimAttr: function(){
+            var  attr = {}, 
+                reverse = this.reverse, 
+                from = this.from || {},
+                to = this.to || {},initStatus = [],
+                duration = this.duration,
+                node = this.node;
+
+            for(p in to) {
+                var obj = {};
+                obj.name = p;
+
+                if(p in from) {
+                    obj.iVal = from[p];
+                    this._setStyle(p, obj.iVal);
+
+                }else {
+                    obj.iVal = parseFloat(node.css(p));
+                }
+                
+                obj.eVal = parseFloat(to[p]);
+                obj.cVal = obj.eVal-obj.iVal;
+                initStatus.push(obj);
+            }
+
+            attr.initStatus = initStatus;
+            attr.duration = duration;
+
+            this._runtimeAttr = attr;
+        }
     };
 
 })(Boia);
@@ -705,12 +842,14 @@ var Boia = Boia || {};
         this.width = config.width || 0;
         this.height = config.height || 0;
 
-        this.boundingBox = config.boundingBox || '';
+        var boundingBoxCls = config.boundingBox || '.widget';
+        this.boundingBox = B.one(boundingBoxCls);
+
         this.visible = config.visible || true;
 
         this.strings = config.strings || 'widget';
         
-        this.initializer();
+        this.initializer(config);
     };
 
     B.Widget.NAME = "widget";
@@ -719,6 +858,12 @@ var Boia = Boia || {};
         initializer: function(config){
         },
         render: function(){
+        },
+        size: function(){
+            return {
+                width: this.boundingBox.eleWidth(),
+                height: this.boundingBox.eleHeight()
+            }
         }
     };
 
@@ -828,7 +973,7 @@ var Boia = Boia || {};
         _changeStyle: function(href) {
             var instance = this;
 
-            B.each.call(this.contentItem, function(item) {
+            Array.prototype.forEach.call(this.contentItem, function(item) {
 
                 if (href === item.id) {
                     if (item.hasClass(TAB_HIDDEN)) {
@@ -847,7 +992,6 @@ var Boia = Boia || {};
 })(Boia);
 
 // =Tooltip
-
 (function(B) {
     'use strict';
 
@@ -931,7 +1075,6 @@ var Boia = Boia || {};
 })(Boia);
 
 // =Combobox
-
 (function(B) {
     'use strict';
 
@@ -1029,31 +1172,29 @@ var Boia = Boia || {};
         
 })(Boia);
 
-// =ContextMenu
-
+// =Menu
 (function(B) {
     'use strict';
 
     var DOT = '.',
         MENU = 'menu';
 
-    B.ContextMenu = function(config){
+    var Menu = function(config){
 
-        var boundingBoxCls = config.boundingBox || '.menu';
+        Menu.superclass.constructor.call(this, config);
 
         this._id = 'menu_'+Math.round(Math.random()*100000);
 
-        this.boundingBox = B.one(boundingBoxCls);
-        this.boundingBox.id = this._id;
-       
-        this.initializer(config);
+        this.boundingBox.id = this._id; 
     };
 
-    B.ContextMenu.prototype = {
+    B.extend(Menu, B.Widget, {
         initializer: function(config){
+            Menu.superclass.initializer.call(this,config);
 
-            this.onContextMenu = config.onContextMenu || function(event){};
+            this.onMenu = config.onMenu || function(event){};
             this.onListClick = config.onListClick || function(listNode){};
+            this.onAreaClick = config.onAreaClick || function(){};
             this.initComponent(config);
             this.bindUI();
         },
@@ -1074,11 +1215,13 @@ var Boia = Boia || {};
         bindUI: function(){
             var instance = this;
 
-            instance.areaNode.on('contextmenu', function(event){
+            /*instance.areaNode.on('contextmenu', function(event){
                 event.preventDefault();
-                instance._onContextMenu(event);
-                instance.onContextMenu(event);
-            });
+                instance._onMenu(event);
+                instance.onMenu(event);
+            });*/
+
+            instance.areaNode.on('click', instance.onAreaClick.bind(instance));
 
             instance.boundingBox.on('click', function(event){
                 event.stopPropagation();
@@ -1090,11 +1233,15 @@ var Boia = Boia || {};
             });
 
         },
-        _onContextMenu: function(event){
+        _onMenu: function(event){
             this.show();
-            this.boundingBox.css('left',event.pageX + 'px');
-            this.boundingBox.css('top',event.pageY + 'px');
+            this.setPos(event.pageX,event.pageY);
         },
+        setPos: function(left,top){
+            this.boundingBox.css('left',left + 'px');
+            this.boundingBox.css('top',top + 'px');
+        },
+
         show: function(){
             this.boundingBox.removeClass('hide');
         },
@@ -1102,7 +1249,9 @@ var Boia = Boia || {};
         hide: function(){
             this.boundingBox.addClass('hide');
         }
-    };
+    });
+
+    B.Menu = Menu;
         
 })(Boia);
 
@@ -1180,7 +1329,6 @@ var Boia = Boia || {};
 })(Boia);
 
 /* =treeView */
-
 (function(B) {
     'use strict';
 

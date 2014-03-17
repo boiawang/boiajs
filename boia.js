@@ -1094,22 +1094,25 @@ var Boia = Boia || {};
 
         this.boundingBox = B.one(boundingBoxCls);
         this.boundingBox.id = this._id;
+        this.currentIndex = 0;
        
-        this.initializer();
+        this.initializer(config);
     };
 
     B.Combobox.prototype = {
-        initializer: function(){
+        initializer: function(config){
 
-            this.initComponent();
+            this.initComponent(config);
             this.bindUI();
         },
 
-        initComponent: function() {
+        initComponent: function(config) {
 
             this.triggerNode = this.boundingBox.one('.combobox-arrow-box');
+            this.inputNode = this.boundingBox.one('.combobox-input');
             this.contentBox = this.boundingBox.one(DOT + COMBOBOX_INNER);
             this.dropBox = this.boundingBox.one(DOT + COMBOBOX_DROP);
+            this.onListClick = config.onListClick || function(event){};
             this.isShowDrop = false;
         },
 
@@ -1128,9 +1131,8 @@ var Boia = Boia || {};
             instance.triggerNode.on('click', instance.toggle.bind(instance));
             instance.dropBox.on('click', instance.select.bind(instance));
 
-            B.one('body').on('click', instance._documentClick.bind(instance))
+            B.one('body').on('click', instance._documentClick.bind(instance));
         },
-
         toggle: function(event) {
             var instance = this;
 
@@ -1158,15 +1160,79 @@ var Boia = Boia || {};
             triggerNode.replaceClass('top','bottom');
             instance.dropBox.removeClass('hide');
         },
+
+        value: function(val){
+            if(val || val === '') {
+                this.inputNode.value = val;
+            }
+        },
+
+        getChildren: function(){
+            var instance = this,
+                children = [];
+
+            [].forEach.call(instance.dropBox.childNodes,function(item){
+                if(item.nodeType == 1) {
+                    children.push(item);
+                }
+            });
+
+            return children;
+        },
+
+        eachChidren: function(fn){
+            var instance = this;
+            var children = instance.getChildren();
+     
+            [].forEach.call(children,function(){
+                fn.apply(instance, arguments)
+            });
+        },
+        item: function(index){
+            this.currentIndex = index;
+            return B.one(DOT+COMBOBOX_LIST+':nth-child('+index+')');
+        },
+        /**
+         * @method select  下拉选择
+         * @param  {[type]} event [description]
+         * @return {[type]}       [description]
+         */
         select: function(event) {
-            var target = event.target;
+            var target = event.target,
+                instance = this;
 
             event.stopPropagation();
-            this.boundingBox.one('.combobox-input').value = target.text();
-            this.toggle();            
+
+            instance.eachChidren(function(item, index){
+                if(item === target) {
+                    instance.currentIndex = index+1;
+                }
+            });
+
+            instance.boundingBox.one('.combobox-input').value = target.text();
+            instance.toggle(event);    
+            instance.onListClick(target);  
         },
         _documentClick: function(event) {
-            this.hideDrop();
+            var instance = this,
+                target = event.target;
+
+            if(!target.hasClass('combobox-result') && !target.hasClass('combobox-arrow-box') && !target.hasClass('combobox-arrow')){
+                instance.hideDrop();
+            }
+        },
+        deleteLine: function(index,current){
+            var text = '';
+
+            if(this.item(index)) {
+                this.dropBox.removeChild(this.item(index));
+            }
+            
+            if(this.item(current)) {
+                text = this.item(current).text();
+            }
+
+            this.value(text);
         }
     };
         

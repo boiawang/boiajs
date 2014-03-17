@@ -31,12 +31,18 @@
 			<li class="combobox-result">测试3</li>
 		</ul>
 	</div>
+	<button class="deleteBtn">删除</button>
 	<script type="text/javascript">
     	(function(B){
     		'use strict';
 
-    		new B.Combobox({
+    		var combobox = new B.Combobox({
     			boundingBox: '.combobox'
+    		});
+
+    		
+    		B.one('.deleteBtn').on('click', function(){
+    			combobox.deleteLine(combobox.currentIndex,1)
     		});
 
     	})(Boia);

@@ -363,9 +363,7 @@ var Boia = Boia || {};
     var d = document;
     var isNumber = B.Lang.isNumber;
 
-    HTMLElement = typeof(HTMLElement) != 'undefiend' ? HTMLElement : Element;
-
-    HTMLElement.prototype.one = function(selector) {
+    Element.prototype.one = function(selector) {
 
         var node = null;
 
@@ -374,7 +372,7 @@ var Boia = Boia || {};
         return node;
     };
 
-    HTMLElement.prototype.all = function(selector) {
+    Element.prototype.all = function(selector) {
 
         var nodeList = null;
 
@@ -383,12 +381,12 @@ var Boia = Boia || {};
         return nodeList;
     };
 
-    HTMLElement.prototype.hasClass = function(cName) {
+    Element.prototype.hasClass = function(cName) {
 
         return !!this.className.match(new RegExp("(\\s|^)" + cName + "(\\s|$)"));
     };
 
-    HTMLElement.prototype.addClass = function(cName) {
+    Element.prototype.addClass = function(cName) {
 
         if (!this.hasClass(cName)) {
             this.className += " " + cName;
@@ -397,7 +395,7 @@ var Boia = Boia || {};
         return this;
     };
 
-    HTMLElement.prototype.removeClass = function(cName) {
+    Element.prototype.removeClass = function(cName) {
 
         if (this.hasClass(cName)) {
 
@@ -407,7 +405,7 @@ var Boia = Boia || {};
         return this;
     };
 
-    HTMLElement.prototype.replaceClass = function(oldName,newName) {
+    Element.prototype.replaceClass = function(oldName,newName) {
 
         this.removeClass(oldName);
         this.addClass(newName);
@@ -415,7 +413,7 @@ var Boia = Boia || {};
         return this;
     };
 
-    HTMLElement.prototype.on = function(type, fn, context) {
+    Element.prototype.on = function(type, fn, context) {
         var context = context || this;
 
         this.addEventListener(type, fn, context);
@@ -434,7 +432,7 @@ var Boia = Boia || {};
         与已定位的父容器（offsetParent对象）左上角的距离
     5. offsetParent对象是指元素最近的定位（relative,absolute）祖先元素，
         递归上溯，如果没有祖先元素是定位的话，会返回null*/
-    HTMLElement.prototype.eleWidth = function() {
+    Element.prototype.eleWidth = function() {
 
         var width = 0;
 
@@ -443,7 +441,7 @@ var Boia = Boia || {};
         return width;
     };      
 
-    HTMLElement.prototype.eleHeight = function() {
+    Element.prototype.eleHeight = function() {
 
         var height = 0;
 
@@ -456,7 +454,7 @@ var Boia = Boia || {};
      * [getX 获得元素x坐标]
      * @return {[number]} [x坐标]
      */
-    HTMLElement.prototype.getX = function() {
+    Element.prototype.getX = function() {
 
         var actualLeft = this.offsetLeft,
             current = this.offsetParent;
@@ -474,7 +472,7 @@ var Boia = Boia || {};
      * [getY 获得元素y坐标]
      * @return {[number]} [y坐标]
      */
-    HTMLElement.prototype.getY = function() {
+    Element.prototype.getY = function() {
 
         var actualTop = this.offsetTop,
             current = this.offsetParent;
@@ -487,7 +485,7 @@ var Boia = Boia || {};
         return actualTop;
     };          
 
-    HTMLElement.prototype.getXY = function() {
+    Element.prototype.getXY = function() {
 
         var x,y;
 
@@ -504,7 +502,7 @@ var Boia = Boia || {};
      * @param  {[string]} val       [description]
      * @return {[type]}           [description]
      */
-    HTMLElement.prototype.css = function(styleName, val) {
+    Element.prototype.css = function(styleName, val) {
         if(isNumber(val)) val = val.toString();
 
         if(val) {
@@ -517,7 +515,7 @@ var Boia = Boia || {};
 
     };     
 
-    HTMLElement.prototype.hide = function() {
+    Element.prototype.hide = function() {
 
         this.addClass('hide');
 
@@ -525,7 +523,7 @@ var Boia = Boia || {};
         
     };  
 
-    HTMLElement.prototype.show = function() {
+    Element.prototype.show = function() {
 
         this.removeClass('hide');
 
@@ -533,19 +531,19 @@ var Boia = Boia || {};
         
     };      
 
-    HTMLElement.prototype.text = function(content) {
+    Element.prototype.text = function(content) {
 
         if(content) {
             this.innerText = content;
         }else {
-            return this.innerText;
+            return this.textContent;
         }
 
         return this;
         
     };   
 
-    HTMLElement.prototype.html = function(content) {
+    Element.prototype.html = function(content) {
 
         if(content) {
             this.innerHTML = content;
@@ -557,13 +555,12 @@ var Boia = Boia || {};
         
     };          
 
-    HTMLElement.prototype.append = function(content) {
+    Element.prototype.append = function(content) {
 
         var div = document.createElement('div').cloneNode(), nodes = null,
             fragment = document.createDocumentFragment();
 
         div.innerHTML = content;
-
 
         nodes = div.childNodes;
         for(var i = 0,length = nodes.length;i < length;i++){
@@ -575,11 +572,10 @@ var Boia = Boia || {};
         nodes = null;
         fragment = null;       
 
-        return this;        
-        
+        return this; 
     };     
 
-     HTMLElement.prototype.prepend = function(content) {
+     Element.prototype.prepend = function(content) {
 
         var divTemp = document.createElement('div'), nodes = null
             , fragment = document.createDocumentFragment();
@@ -593,40 +589,51 @@ var Boia = Boia || {};
         this.insertBefore(fragment, this.firstChild);
         // 内存回收？
         nodes = null;
-        fragment = null;
-        
-    };        
-
-    /*HTMLElement.prototype.appendHTML = function(html) {
-        var divTemp = document.createElement("div"), nodes = null
-            // 文档片段，一次性append，提高性能
-            , fragment = document.createDocumentFragment();
-        divTemp.innerHTML = html;
-        nodes = divTemp.childNodes;
-        for (var i=0, length=nodes.length; i<length; i+=1) {
-           fragment.appendChild(nodes[i].cloneNode(true));
-        }
-        this.appendChild(fragment);
-        // 据说下面这样子世界会更清净
-        nodes = null;
-        fragment = null;
+        fragment = null;  
     };
 
-    HTMLElement.prototype.prependHTML = function( html) {
-        var divTemp = document.createElement("div"), nodes = null
-            , fragment = document.createDocumentFragment();
+    /**
+     * @method  addRow 增加一行，修改innerHTML不能添加表格行
+     * @param {[String]} content html字符串
+     */
+    Element.prototype.addRow = function(content) {
 
-        divTemp.innerHTML = html;
-        nodes = divTemp.childNodes;
-        for (var i=0, length=nodes.length; i<length; i+=1) {
-           fragment.appendChild(nodes[i].cloneNode(true));
+        var f = content.indexOf('>'), l = content.lastIndexOf('</'),
+            tag = content.substr(l+2, content.length-l-3), e, s;
+
+        if (tag == 'tr') e = this.insertRow(-1);
+        else {
+            e = document.createElement(tag);
+            this.appendChild(e, this);
+            e.innerHTML = content.substr(f+1, l-f-1);
         }
-        // 插入到容器的前面 - 差异所在
-        this.insertBefore(fragment, this.firstChild);
-        // 内存回收？
-        nodes = null;
-        fragment = null;
-    };*/
+        
+        s = content.substr(1, f-1).split(' ');
+        for (var i=0; i<s.length; i++) {
+            var ss = s[i].split('=');
+            if (ss.length==1) continue;
+            e.setAttribute(ss[0], strip(ss[1]));
+        }
+        
+        var ti = content.substr(f+1, l-f-1);
+        if (content.substr(l+2, content.length-l-3) == 'tr') {
+            var tf;
+            while( (tf = ti.indexOf("<td>")) != -1) {
+                ti = ti.substr(tf+4, ti.length-tf-4);
+                var te = e.insertCell(-1);
+                tl = ti.indexOf("</td>");
+                te.innerHTML = ti.substr(0, tl);
+                ti = ti.substr(tl, ti.length-tl);
+            }
+        } 
+        
+        return e;
+    
+        function strip(ss) {
+            if (ss[0]=='\''|| ss[0] == "\"") 
+                return ss.substr(1, ss.length-2);
+        }
+    };      
 
 })(Boia);
 
@@ -649,7 +656,7 @@ var Boia = Boia || {};
     };
 
     /**
-     * [addClass 给nodelist加类]
+     * @method  addClass 给nodelist加类
      * @param {[string]} cName [类名]
      * @return  {[NodeList]}
      */
@@ -663,7 +670,7 @@ var Boia = Boia || {};
     };
 
     /**
-     * [on 处理nodelist的事件]
+     * @method  on 处理nodelist的事件
      * @param  {[string]}   type 事件类型
      * @param  {Function} fn   事件处理函数
      * @return  {[NodeList]}
@@ -677,6 +684,22 @@ var Boia = Boia || {};
 
         return this;
     };
+
+    /**
+     * @method getCheckValue 获得checkbox选中的值
+     * @return {[String]} 返回逗号隔开的字符串
+     */
+    NodeList.prototype.getCheckValue = function() {
+        var arr = [];
+
+        Array.prototype.forEach.call(this, function(list) {
+            if(list.checked){
+                arr.push(list.value);
+            }
+        });
+
+        return arr.toString();
+    };    
 
 })(Boia);
 
@@ -843,12 +866,13 @@ var Boia = Boia || {};
         this.height = config.height || 0;
 
         var boundingBoxCls = config.boundingBox || '.widget';
+
         this.boundingBox = B.one(boundingBoxCls);
 
         this.visible = config.visible || true;
 
         this.strings = config.strings || 'widget';
-        
+
         this.initializer(config);
     };
 
@@ -856,8 +880,12 @@ var Boia = Boia || {};
 
     B.Widget.prototype = {
         initializer: function(config){
+            this.bindUI();
         },
         render: function(){
+        },
+        bindUI: function(){
+
         },
         size: function(){
             return {
@@ -1094,7 +1122,7 @@ var Boia = Boia || {};
 
         this.boundingBox = B.one(boundingBoxCls);
         this.boundingBox.id = this._id;
-        this.currentIndex = 0;
+        this.currentIndex = 1;
        
         this.initializer(config);
     };
@@ -1256,13 +1284,12 @@ var Boia = Boia || {};
 
     B.extend(Menu, B.Widget, {
         initializer: function(config){
-            Menu.superclass.initializer.call(this,config);
-
             this.onMenu = config.onMenu || function(event){};
             this.onListClick = config.onListClick || function(listNode){};
             this.onAreaClick = config.onAreaClick || function(){};
             this.initComponent(config);
-            this.bindUI();
+
+            Menu.superclass.initializer.call(this,config);
         },
 
         initComponent: function(config){
@@ -1394,7 +1421,7 @@ var Boia = Boia || {};
         
 })(Boia);
 
-/* =treeView */
+/* =TreeView */
 (function(B) {
     'use strict';
 
@@ -1407,11 +1434,11 @@ var Boia = Boia || {};
         TREE_LABEL = 'tree-label';
 
     var liNodeTpl = '<li class='+TREE_NODE+'>'+
-                    '<div class='+TREE_NODE_CONTENT+'>'+
-                    '<span class='+TREE_LABEL+'></span></div>'+
+                    '<div class="{cls} '+TREE_NODE_CONTENT+'">{iconNode}'+
+                    '<span class='+TREE_LABEL+'>{label}</span></div>'+
                     '<ul class='+TREE_CONTAINER+'></ul>'+'</li>';
 
-    B.TreeView = function(config){
+    var TreeView = function(config){
         var boundingBoxCls = config.boundingBox || '.treeview';
 
         this._id = 'treeview_'+Math.round(Math.random()*100000);
@@ -1419,21 +1446,21 @@ var Boia = Boia || {};
         this.boundingBox = B.one(boundingBoxCls);
         this.boundingBox.id = this._id;
 
-        this.initializer(config);
+        TreeView.superclass.constructor.call(this, config);
     };
 
-    B.TreeView.prototype = {
+    B.extend(TreeView, B.Widget, {
         initializer: function(config){
 
             this.children = config.children || [];
             this.initComponent(config);
-            this.bindUI();
+            
+            TreeView.superclass.initializer.call(this,config);
         },
 
         initComponent: function(config){
             this.boundingBox.append('<ul class='+TREE_VIEW_CONTENT+'></ul>');
-
-           
+        
             this.contentBox = this.boundingBox.one(DOT + TREE_VIEW_CONTENT);
         },
 
@@ -1449,6 +1476,39 @@ var Boia = Boia || {};
             instance._generateTree(instance.children);
         },
 
+        bindUI: function(){
+            var instance = this;
+
+            this.contentBox.on('click', instance._contentBoxClick.bind(instance));
+        },
+        _contentBoxClick: function(event){
+            var instance = this;
+            var target = event.target;
+
+            if(target.hasClass('tree-node-root')){
+                instance.toggle(target);
+            }
+            if(target.parentNode.hasClass('tree-node-root')){
+                instance.toggle(target.parentNode);
+            }
+        },
+
+        toggle: function(node){
+            var instance = this;
+            var next = node.nextSibling;
+
+            if(next.hasClass('hide')){
+                instance.show(next);
+            }else {
+                instance.hide(next);
+            }
+        },
+        show: function(node){
+            node.removeClass('hide');
+        },
+        hide: function(node){
+            node.addClass('hide');
+        },
         _generateTree: function(children,parentNode){
             var instance = this;
 
@@ -1463,21 +1523,148 @@ var Boia = Boia || {};
 
         _insertNode: function(item, parentNode){
             var instance = this;
+            var cls = 'tree-node-sub';
+            var iconNode = B.Lang.sub('<img class="tree-icon" src="../images/small/{imgIndex}-1.bmp" alt="" />', {
+                imgIndex: item.imgIndex
+            });
 
-            if(!parentNode) parentNode = instance.contentBox;
+            if(!parentNode){
+                parentNode = instance.contentBox;
+                cls = 'tree-node-root';
+                iconNode = '';
+            }
 
-            parentNode.append(liNodeTpl);
-
-            parentNode.lastElementChild.one(DOT + TREE_LABEL).text(item.label);
+            parentNode.append(B.Lang.sub(liNodeTpl, {
+                label: item.label,
+                cls: cls,
+                iconNode: iconNode
+            }));
 
             return parentNode.lastElementChild.one(DOT+TREE_CONTAINER);
+        }
+    });
+
+    B.TreeView = TreeView;
+
+})(Boia);
+
+/* =DataTable*/
+(function(B){
+    'use strict';
+
+    var DOT = '',
+        DATATABLE_DATA = 'datatable-data',
+        TH_ROW = 'th-row';
+
+    var temp_th = '<th class="th-col">{label}</th>',
+        temp_tr = '<tr class="td-row">111</tr>',
+        temp_td = '<td class="td-{cls}">{label}</td>';
+
+    var DataTable = function(config){
+
+        DataTable.superclass.constructor.call(this, config);
+
+        this._id = 'datatable_'+Math.round(Math.random()*100000);
+
+        this.boundingBox.id = this._id; 
+    };    
+
+    B.extend(DataTable, B.Widget, {
+        initializer: function(config){
+            var instance = this;
+
+            instance.columnset = config.columnset || [];
+            instance.recordset = config.recordset || [];
+            instance.contentBox = instance.boundingBox.one('tbody');
+            instance.headerBox = instance.boundingBox.one('.th-row');
+            instance.onColumnClick = config.onColumnClick || function(event){};
+            instance.previousSelectNode = null;
+
+            DataTable.superclass.initializer.call(this,config);
         },
 
         bindUI: function(){
             var instance = this;
 
+            instance.contentBox.on('click', instance._contentBoxClick.bind(instance));
+        },
 
+        render: function(){
+            var instance = this;
+
+            instance._renderHead();
+            instance._renderBody();
+
+            return this;
+        },
+
+        deleteRow: function(){
+            var instance = this;
+
+            if(instance.previousSelectNode){
+                instance.previousSelectNode.parentNode.removeChild(instance.previousSelectNode);
+                instance.previousSelectNode = null;
+            }
+        },
+
+        deleteAllRow: function(){
+            var instance = this;
+
+            instance.contentBox.innerHTML = '';
+            instance.previousSelectNode = null;
+        },
+
+        _renderHead: function(){
+            var instance = this;
+            var columnset = instance.columnset;
+
+            columnset.forEach(function(item, index){
+
+                instance.headerBox.addRow(B.Lang.sub(temp_th, {
+                    label: item.label
+                }));
+            });
+        },
+        _renderBody: function(){
+            var instance = this;
+            var recordset = instance.recordset;   
+
+            recordset.forEach(function(item, index){
+                var trNode = instance.contentBox.addRow(temp_tr);
+                
+                for(var per in item) {
+                    var tdNode = trNode.addRow(B.Lang.sub(temp_td, {
+                        cls: per,
+                        label: item[per]
+                    }));
+
+                    tdNode.addClass('td-col');
+                }
+            });       
+        },
+
+        _contentBoxClick: function(event){
+            var target = event.target;
+            var instance = this;
+
+            if(target.hasClass('td-col')) {
+                instance._rowClick(target);
+            }
+        },
+        _rowClick: function(node){
+            var instance = this;
+
+            if(instance.previousSelectNode) {
+                instance.previousSelectNode.removeClass('table-selected');
+            }
+
+            node.parentNode.addClass('table-selected');
+
+            instance.previousSelectNode = node.parentNode;
+            instance.onColumnClick();
         }
-    };
+    }); 
+
+    B.DataTable = DataTable;   
 
 })(Boia);
